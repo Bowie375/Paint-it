@@ -30,6 +30,13 @@ OBJECT_PATH = './data'
 def parse_args():
     parser = argparse.ArgumentParser()
 
+    # path
+    parser.add_argument('--obj_path', type=str, default=OBJECT_PATH)
+    parser.add_argument('--output_dir', type=str, default='./log')
+
+    # prompt
+    parser.add_argument('--identity', type=str, default='a tshirt')
+
     # model
     parser.add_argument('--decay', type=float, default=0)  # weight decay
     parser.add_argument('--lr_decay', type=float, default=0.9)
@@ -52,7 +59,7 @@ def parse_args():
     parser.add_argument('--n_view', type=int, default=4)
     parser.add_argument('--exp_name', type=str, default='debug')
     parser.add_argument('--env_scale', type=float, default=2.0)
-    parser.add_argument('--envmap', type=str, default='data/irrmaps/mud_road_puresky_4k.hdr')
+    parser.add_argument('--envmap', type=str, default='external/Paint-it/data/irrmaps/mud_road_puresky_4k.hdr')
     parser.add_argument('--log_freq', type=int, default=100)
     parser.add_argument('--gd_scale', type=int, default=100)
     parser.add_argument('--uv_res', type=int, default=512)
@@ -122,7 +129,8 @@ def compute_sd_step(min, max, iter_frac):
 
 def main(args, guidance):
     exp_name = time.strftime('%Y%m%d', time.localtime()) + '_' + args.exp_name
-    output_dir = os.path.join('./logs', exp_name)
+    #output_dir = os.path.join('./logs', exp_name)
+    output_dir = args.output_dir
     Path(output_dir).mkdir(parents=True, exist_ok=True)
     # seed_all(args)
 
@@ -131,7 +139,7 @@ def main(args, guidance):
         (f"a DSLR photo of {args.identity}", "best quality, high quality, extremely detailed, good geometry"))
 
     # load obj and read uv information
-    args.obj_path = os.path.join(OBJECT_PATH, args.objaverse_id, 'mesh.obj')
+    #args.obj_path = os.path.join(OBJECT_PATH, args.objaverse_id, 'mesh.obj')
     obj_f_uv, obj_v_uv, obj_f, obj_v = load_obj_uv(obj_path=args.obj_path, device=device)
 
     # initialize template mesh
@@ -231,9 +239,9 @@ def main(args, guidance):
         if step % args.log_freq == 0 and args.logging:
             with torch.no_grad():
                 report_process(step, losses, exp_name)
-                mtl_file = os.path.join(output_dir, 'mesh.mtl')
-                save_mtl(mtl_file, mesh.material, step=step)
-                torchvision.utils.save_image(obj_image[0], os.path.join(output_dir, f'obj_{step:04}.jpg'))
+                #mtl_file = os.path.join(output_dir, 'mesh.mtl')
+                #save_mtl(mtl_file, mesh.material, step=step)
+                #torchvision.utils.save_image(obj_image[0], os.path.join(output_dir, f'obj_{step:04}.jpg'))
 
     with torch.no_grad():
         #
@@ -260,7 +268,10 @@ def main(args, guidance):
             final_material['normal'].clamp_()
             vis_mesh.material = final_material
 
-            write_obj(output_dir, vis_mesh)
+            #write_obj(output_dir, vis_mesh)
+            mtl_file = os.path.join(output_dir, 'material_0.mtl')
+            print("Writing material: ", mtl_file)
+            material.save_mtl(mtl_file, vis_mesh.material)
 
             final_lgt = lgt
             final_buffers = render_mesh(glctx, vis_mesh, final_cam['mvp'], final_cam['campos'], final_lgt,
@@ -272,27 +283,28 @@ def main(args, guidance):
             vis_mesh_img = final_obj_rgb * final_obj_ws + (1 - final_obj_ws) * 1  # white bg, float32, [B, 3, H, W]
 
             # # save final front body image
-            if elev == 0.0:
-                os.makedirs(os.path.join(output_dir, 'view_front'), exist_ok=True)
-            else:
-                os.makedirs(os.path.join(output_dir, 'view_top'), exist_ok=True)
-            for idx in range(circle_n_view):
-                if idx == 0:
-                    if elev == 0.0:
-                        torchvision.utils.save_image(final_obj_rgb[idx], os.path.join(output_dir, "final_front.png"))
-                    else:
-                        torchvision.utils.save_image(final_obj_rgb[idx], os.path.join(output_dir, "final_top.png"))
-                if elev == 0.0:
-                    torchvision.utils.save_image(vis_mesh_img[idx], os.path.join(output_dir, 'view_front', f'{idx:04}.png'))
-                else:
-                    torchvision.utils.save_image(vis_mesh_img[idx], os.path.join(output_dir, 'view_top', f'{idx:04}.png'))
+            # if elev == 0.0:
+            #     os.makedirs(os.path.join(output_dir, 'view_front'), exist_ok=True)
+            # else:
+            #     os.makedirs(os.path.join(output_dir, 'view_top'), exist_ok=True)
+            # for idx in range(circle_n_view):
+            #     if idx == 0:
+            #         if elev == 0.0:
+            #             torchvision.utils.save_image(final_obj_rgb[idx], os.path.join(output_dir, "final_front.png"))
+            #         else:
+            #             torchvision.utils.save_image(final_obj_rgb[idx], os.path.join(output_dir, "final_top.png"))
+            #     if elev == 0.0:
+            #         torchvision.utils.save_image(vis_mesh_img[idx], os.path.join(output_dir, 'view_front', f'{idx:04}.png'))
+            #     else:
+            #         torchvision.utils.save_image(vis_mesh_img[idx], os.path.join(output_dir, 'view_top', f'{idx:04}.png'))
 
 
 if __name__ == '__main__':
     args = parse_args()
 
     mesh_dicts = {
-        '9ce8ab24383c4c93b4c1c7c3848abc52': 'a pretzel',
+        #'9ce8ab24383c4c93b4c1c7c3848abc52': 'a pretzel',
+        'cloth': 'a tshirt for teenage boys',
     }
 
     # load stable-diffusion model
@@ -301,9 +313,11 @@ if __name__ == '__main__':
     for p in guidance.parameters():
         p.requires_grad = False
 
-    # iterate through the renderpeople items
-    for obj_id, caption in mesh_dicts.items():
-        args.exp_name = '_'.join((caption.split(' ')[1:] + [obj_id[:6]]))
-        args.objaverse_id = obj_id
-        args.identity = caption
-        main(args, guidance)
+    args.exp_name = '_'.join((args.identity.split(' ')[1:]))
+    main(args, guidance)
+    # # iterate through the renderpeople items
+    # for obj_id, caption in mesh_dicts.items():
+    #     args.exp_name = '_'.join((caption.split(' ')[1:] + [obj_id[:6]]))
+    #     args.objaverse_id = obj_id
+    #     args.identity = caption
+    #     main(args, guidance)

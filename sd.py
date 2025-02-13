@@ -56,15 +56,15 @@ class StableDiffusion(nn.Module):
             raise ValueError(f'Stable-diffusion version {self.sd_version} not supported.')
 
         # Create model
-        self.vae = AutoencoderKL.from_pretrained(model_key, subfolder="vae").to(self.device)
-        self.tokenizer = CLIPTokenizer.from_pretrained(model_key, subfolder="tokenizer")
-        self.text_encoder = CLIPTextModel.from_pretrained(model_key, subfolder="text_encoder").to(self.device)
-        self.unet = UNet2DConditionModel.from_pretrained(model_key, subfolder="unet").to(self.device)
+        self.vae = AutoencoderKL.from_pretrained(model_key, subfolder="vae", local_files_only=True).to(self.device)
+        self.tokenizer = CLIPTokenizer.from_pretrained(model_key, subfolder="tokenizer", local_files_only=True)
+        self.text_encoder = CLIPTextModel.from_pretrained(model_key, subfolder="text_encoder", local_files_only=True).to(self.device)
+        self.unet = UNet2DConditionModel.from_pretrained(model_key, subfolder="unet", local_files_only=True).to(self.device)
 
         if is_xformers_available():
             self.unet.enable_xformers_memory_efficient_attention()
 
-        self.scheduler = DDIMScheduler.from_pretrained(model_key, subfolder="scheduler")
+        self.scheduler = DDIMScheduler.from_pretrained(model_key, subfolder="scheduler", local_files_only=True)
         # self.ts_sampler = TimestepSampler(self.scheduler, device=device)
         # self.scheduler = PNDMScheduler.from_pretrained(model_key, subfolder="scheduler")
 
