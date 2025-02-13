@@ -269,7 +269,7 @@ def main(args, guidance):
             vis_mesh.material = final_material
 
             #write_obj(output_dir, vis_mesh)
-            mtl_file = os.path.join(output_dir, 'material_0.mtl')
+            mtl_file = os.path.join(output_dir, 'material.mtl')
             print("Writing material: ", mtl_file)
             material.save_mtl(mtl_file, vis_mesh.material)
 

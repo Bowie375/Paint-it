@@ -102,7 +102,7 @@ def load_mtl(fn, clear_ks=True):
 def save_mtl(fn, material, step=None):
     folder = os.path.dirname(fn)
     with open(fn, "w") as f:
-        f.write('newmtl defaultMat\n')
+        f.write('newmtl material_0\n')
         if material is not None:
             f.write('bsdf   %s\n' % material['bsdf'])
             if 'kd' in material.keys():
