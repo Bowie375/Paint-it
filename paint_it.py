@@ -59,7 +59,7 @@ def parse_args():
     parser.add_argument('--n_view', type=int, default=4)
     parser.add_argument('--exp_name', type=str, default='debug')
     parser.add_argument('--env_scale', type=float, default=2.0)
-    parser.add_argument('--envmap', type=str, default='external/Paint-it/data/irrmaps/mud_road_puresky_4k.hdr')
+    parser.add_argument('--envmap', type=str, default='../../../external/Paint-it/data/irrmaps/mud_road_puresky_4k.hdr')
     parser.add_argument('--log_freq', type=int, default=100)
     parser.add_argument('--gd_scale', type=int, default=100)
     parser.add_argument('--uv_res', type=int, default=512)
